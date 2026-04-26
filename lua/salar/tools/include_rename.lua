@@ -149,7 +149,7 @@ local function apply_lsp_file_rename(old_abs, new_abs)
 
 	local any_applied = false
 	for _, client in ipairs(vim.lsp.get_clients()) do
-		if client.supports_method and client:supports_method("workspace/willRenameFiles") then
+		if client:supports_method("workspace/willRenameFiles") then
 			local result = client:request_sync("workspace/willRenameFiles", { files = files }, 2000)
 			local edit = result and result.result
 			if edit then

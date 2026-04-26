@@ -51,6 +51,10 @@ local function filename_stem()
 	return vim.fn.expand("%:t:r")
 end
 
+local function filename()
+	return vim.fn.expand("%:t")
+end
+
 local function current_file_path()
 	return normalize(vim.fn.expand("%:p"))
 end
@@ -413,6 +417,7 @@ function M.insert()
 	local ext = vim.fn.expand("%:e")
 	local ns = project_namespace()
 	local cls = filename_stem()
+	local name = filename()
 	local file_path = current_file_path()
 	local lines
 
@@ -427,6 +432,15 @@ function M.insert()
 			"private:",
 			"};",
 			"",
+			"}",
+		}
+	elseif name == "main.cpp" or name == "Main.cpp" then
+		lines = {
+			"#include <iostream>",
+			"",
+			"int main() {",
+			'\tstd::cout << "Hello, world!\\n";',
+			"\treturn 0;",
 			"}",
 		}
 	elseif ext == "cpp" or ext == "cc" or ext == "cxx" then

@@ -18,8 +18,8 @@ return {
       highlight = {
         enable = true,
       },
-      -- enable indentation
-      indent = { enable = true },
+      -- Treesitter indent can override normal `o`/`O` newline indent behavior.
+      indent = { enable = false },
       -- enable autotagging (w/ nvim-ts-autotag plugin)
       autotag = {
         enable = true,
@@ -47,6 +47,9 @@ return {
         "vimdoc",
         "c",
         "haskell",
+        "gdscript",
+        "gdshader",
+        "godot_resource",
       },
       incremental_selection = {
         enable = true,

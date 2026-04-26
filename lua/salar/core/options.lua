@@ -10,6 +10,9 @@ opt.tabstop = 8
 opt.shiftwidth = 8
 opt.expandtab = false
 opt.autoindent = true
+opt.smartindent = true
+opt.copyindent = true
+opt.preserveindent = true
 
 opt.wrap = false
 
@@ -31,3 +34,26 @@ opt.splitbelow = true
 
 opt.foldmethod = "marker"
 opt.foldmarker = "#pragma region,#pragma endregion"
+
+vim.api.nvim_create_autocmd("FileType", {
+	callback = function(args)
+		local bo = vim.bo[args.buf]
+		bo.autoindent = true
+		bo.smartindent = true
+		bo.copyindent = true
+		bo.preserveindent = true
+	end,
+})
+
+vim.filetype.add({
+	extension = {
+		gd = "gdscript",
+		gdshader = "gdshader",
+		gdshaderinc = "gdshaderinc",
+		tres = "gdresource",
+		tscn = "gdresource",
+	},
+	filename = {
+		["project.godot"] = "godot",
+	},
+})

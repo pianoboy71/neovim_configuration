@@ -10,6 +10,21 @@ return {
 		local lspconfig = require("lspconfig")
 		local cmp_nvim_lsp = require("cmp_nvim_lsp")
 		local keymap = vim.keymap
+		local qt_clangd_flag_pattern = "^Unknown argument:%s*['\"]?%-mno%-direct%-extern%-access['\"]?"
+
+		local default_publish_diagnostics = vim.lsp.handlers["textDocument/publishDiagnostics"]
+		vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
+			local client = ctx and vim.lsp.get_client_by_id(ctx.client_id)
+			if client and client.name == "clangd" and result and result.diagnostics then
+				result = vim.deepcopy(result)
+				result.diagnostics = vim.tbl_filter(function(diagnostic)
+					local message = diagnostic.message or ""
+					return not message:match(qt_clangd_flag_pattern)
+				end, result.diagnostics)
+			end
+
+			return default_publish_diagnostics(err, result, ctx, config)
+		end
 
 
 		-- setup keymaps when LSP attaches
@@ -29,8 +44,8 @@ return {
 				opts.desc = "Go to declaration"
 				keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
 
-				opts.desc = "Show LSP definitions"
-				keymap.set("n", "gd", "<cmd>Telescope lsp_definitions<CR>", opts)
+				opts.desc = "Go to definition"
+				keymap.set("n", "gd", vim.lsp.buf.definition, opts)
 
 				opts.desc = "Show LSP implementations"
 				keymap.set("n", "gi", "<cmd>Telescope lsp_implementations<CR>", opts)
@@ -134,6 +149,11 @@ return {
 				"--clang-tidy",
 				"--query-driver=/usr/bin/c++,/usr/bin/g++",
 			},
+			init_options = {
+				fallbackFlags = {
+					"-std=c++20",
+				},
+			},
 		})
 		vim.lsp.enable("clangd")
 
@@ -160,26 +180,33 @@ return {
 				},
 			},
 		})
-		vim.lsp.enable("lua_ls")
+			vim.lsp.enable("lua_ls")
 
-		-- auto-format on save (C/C++)
-		vim.api.nvim_create_autocmd("BufWritePre", {
-			callback = function(ev)
-				local ft = vim.bo[ev.buf].filetype
+			-- auto-format on save
+			vim.api.nvim_create_autocmd("BufWritePre", {
+				callback = function(ev)
+					local ft = vim.bo[ev.buf].filetype
+					local cpp_like = vim.tbl_contains({ "c", "cpp", "objc", "objcpp" }, ft)
 
+					-- Typst uses typstyle (not LSP)
+					if ft == "typst" then
+						require("conform").format({ bufnr = ev.buf })
+						return
+					end
 
-				-- Typst uses typstyle (not LSP)
-				if ft == "typst" then
-					require("conform").format({ bufnr = ev.buf })
-					return
-				end
+					if not cpp_like then
+						return
+					end
 
-				vim.lsp.buf.format({
-					bufnr = ev.buf,
-					async = false,
-				})
-			end,
-		})
+					vim.lsp.buf.format({
+						bufnr = ev.buf,
+						async = false,
+						filter = function(client)
+							return client.name == "clangd"
+						end,
+					})
+				end,
+			})
 		-- ============================
 		-- Rust
 		-- ============================
@@ -228,6 +255,23 @@ return {
 			})
 
 			vim.lsp.enable("hls")
+		end
+
+		-- ============================
+		-- Godot / GDScript
+		-- ============================
+		vim.lsp.config("gdscript", {
+			capabilities = capabilities,
+		})
+
+		vim.lsp.enable("gdscript")
+
+		if vim.fn.executable("gdshader-lsp") == 1 then
+			vim.lsp.config("gdshader_lsp", {
+				capabilities = capabilities,
+			})
+
+			vim.lsp.enable("gdshader_lsp")
 		end
 	end,
 
