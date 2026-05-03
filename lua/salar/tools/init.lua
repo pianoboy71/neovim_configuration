@@ -44,6 +44,8 @@ function M.setup()
 		local pdf = file:gsub("%.typ$", ".pdf")
 		vim.fn.jobstart({ "zathura", pdf })
 	end, {})
+
+	require("salar.tools.cpp_extract").setup()
 end
 
 return M

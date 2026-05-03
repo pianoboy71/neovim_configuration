@@ -46,6 +46,7 @@ return {
         "query",
         "vimdoc",
         "c",
+        "cpp",
         "haskell",
         "gdscript",
         "gdshader",
