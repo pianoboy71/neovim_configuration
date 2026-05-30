@@ -10,8 +10,30 @@ return {
             return path and uv.fs_stat(path) ~= nil
         end
 
+        local function is_executable(path)
+            return file_exists(path) and vim.fn.executable(path) == 1
+        end
+
+        local function workspace_root()
+            local current = vim.api.nvim_buf_get_name(0)
+            local root_markers = {
+                ".git",
+                "compile_commands.json",
+                "CMakeLists.txt",
+                "Cargo.toml",
+                "Makefile",
+            }
+
+            local root = vim.fs.dirname(vim.fs.find(root_markers, {
+                path = current ~= "" and current or vim.fn.getcwd(),
+                upward = true,
+            })[1] or "")
+
+            return root ~= "" and root or vim.fn.getcwd()
+        end
+
         local function pick_cpp_binary()
-            local cwd = vim.fn.getcwd()
+            local cwd = workspace_root()
             local current = vim.api.nvim_buf_get_name(0)
             local stem = vim.fn.fnamemodify(current, ":t:r")
             local candidates = {
@@ -24,12 +46,22 @@ return {
             }
 
             for _, candidate in ipairs(candidates) do
-                if file_exists(candidate) and vim.fn.executable(candidate) == 1 then
+                if is_executable(candidate) then
+                    vim.notify("DAP launching " .. candidate, vim.log.levels.INFO)
                     return candidate
                 end
             end
 
-            return vim.fn.input("Path to executable: ", cwd .. "/", "file")
+            local picked = vim.fn.input("Path to executable: ", cwd .. "/", "file")
+            if picked == "" then
+                vim.notify("DAP launch cancelled: no executable selected", vim.log.levels.WARN)
+                return nil
+            end
+            if not is_executable(picked) then
+                vim.notify("DAP launch aborted: not executable: " .. picked, vim.log.levels.ERROR)
+                return nil
+            end
+            return picked
         end
 
         local function split_args(input)
@@ -82,7 +114,6 @@ return {
                 request = "launch",
                 program = pick_cpp_binary,
                 cwd = "${workspaceFolder}",
-                console = "integratedTerminal",
                 stopOnEntry = false,
             },
             {
@@ -92,7 +123,6 @@ return {
                 program = pick_cpp_binary,
                 args = prompt_args,
                 cwd = "${workspaceFolder}",
-                console = "integratedTerminal",
                 stopOnEntry = false,
             },
             {

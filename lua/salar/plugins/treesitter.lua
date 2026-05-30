@@ -1,11 +1,14 @@
 return {
  "nvim-treesitter/nvim-treesitter",
+  branch = "main",
   event = { "BufReadPre", "BufNewFile" },
   build = ":TSUpdate",
   dependencies = {
     "windwp/nvim-ts-autotag",
   },
   config = function()
+    local disable_markdown = vim.fn.has("nvim-0.12") == 1
+
     -- import nvim-treesitter plugin
     local treesitter = require("nvim-treesitter.configs")
 
@@ -17,7 +20,7 @@ return {
     treesitter.setup({ -- enable syntax highlighting
       highlight = {
         enable = true,
-        disable = { "markdown", "markdown_inline" },
+        disable = disable_markdown and { "markdown", "markdown_inline" } or {},
       },
       -- Treesitter indent can override normal `o`/`O` newline indent behavior.
       indent = { enable = false },

@@ -7,7 +7,17 @@ return {
 
     config = function()
         local dap = require("dap")
-        local dapui = require("dapui")
+        local ok_nio = pcall(require, "nio")
+        if not ok_nio then
+            vim.notify("nvim-dap-ui disabled: failed to load nvim-nio", vim.log.levels.ERROR)
+            return
+        end
+
+        local ok_dapui, dapui = pcall(require, "dapui")
+        if not ok_dapui then
+            vim.notify("nvim-dap-ui disabled: failed to load dap-ui", vim.log.levels.ERROR)
+            return
+        end
 
         -----------------------------------------------------------------------
         -- UI SETUP
