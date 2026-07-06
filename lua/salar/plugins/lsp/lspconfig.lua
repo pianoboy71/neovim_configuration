@@ -7,10 +7,15 @@ return {
 		{ "folke/neodev.nvim",                   opts = {} },
 	},
 	config = function()
-		local lspconfig = require("lspconfig")
 		local cmp_nvim_lsp = require("cmp_nvim_lsp")
+		local capabilities = cmp_nvim_lsp.default_capabilities()
 		local keymap = vim.keymap
 		local qt_clangd_flag_pattern = "^Unknown argument:%s*['\"]?%-mno%-direct%-extern%-access['\"]?"
+
+		local function cmd_from_path(command, ...)
+			local executable = vim.fn.exepath(command)
+			return { executable ~= "" and executable or command, ... }
+		end
 
 		local default_publish_diagnostics = vim.lsp.handlers["textDocument/publishDiagnostics"]
 		vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
@@ -94,9 +99,6 @@ return {
 			end,
 		})
 
-		-- LSP completion capabilities
-		local capabilities = cmp_nvim_lsp.default_capabilities()
-
 		-- diagnostic signs
 		local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
 		for type, icon in pairs(signs) do
@@ -120,14 +122,12 @@ return {
 		-- Language servers
 		-- ============================
 
-		-- TypeScript / TSX
-		local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
 		-- ============================
 		-- TypeScript / TSX (NEW API)
 		-- ============================
 		vim.lsp.config("ts_ls", {
 			capabilities = capabilities,
+			cmd = cmd_from_path("typescript-language-server", "--stdio"),
 			filetypes = {
 				"typescript",
 				"typescriptreact",
@@ -143,12 +143,12 @@ return {
 		-- ============================
 		vim.lsp.config("clangd", {
 			capabilities = capabilities,
-			cmd = {
+			cmd = cmd_from_path(
 				"clangd",
 				"--background-index",
 				"--clang-tidy",
-				"--query-driver=/usr/bin/c++,/usr/bin/g++",
-			},
+				"--query-driver=/usr/bin/c++,/usr/bin/g++"
+			),
 			init_options = {
 				fallbackFlags = {
 					"-std=c++20",
@@ -162,6 +162,7 @@ return {
 		-- ============================
 		vim.lsp.config("lua_ls", {
 			capabilities = capabilities,
+			cmd = cmd_from_path("lua-language-server"),
 			settings = {
 				Lua = {
 					runtime = {
@@ -190,7 +191,10 @@ return {
 
 					-- Typst uses typstyle (not LSP)
 					if ft == "typst" then
-						require("conform").format({ bufnr = ev.buf })
+						local ok, conform = pcall(require, "conform")
+						if ok then
+							conform.format({ bufnr = ev.buf })
+						end
 						return
 					end
 
@@ -212,6 +216,7 @@ return {
 		-- ============================
 		vim.lsp.config("rust_analyzer", {
 			capabilities = capabilities,
+			cmd = cmd_from_path("rust-analyzer"),
 			settings = {
 				["rust-analyzer"] = {
 					inlayHints = {
