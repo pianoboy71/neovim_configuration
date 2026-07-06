@@ -21,6 +21,7 @@ return {
 		local function python_path(root_dir)
 			local function existing_python(base)
 				local candidates = {
+					base .. "/python.exe",
 					base .. "/Scripts/python.exe",
 					base .. "/bin/python",
 					base .. "/bin/python3",
@@ -68,6 +69,25 @@ return {
 			end
 
 			local function pyenv_python()
+				local function pyenv_which_python(cwd)
+					if not cwd or cwd == "" or not vim.uv.fs_stat(cwd) then
+						return nil
+					end
+
+					local result = vim.system({ "pyenv", "which", "python" }, { cwd = cwd, text = true }):wait()
+					local python = result.code == 0 and result.stdout and vim.trim(result.stdout) or nil
+					if python and python ~= "" and vim.uv.fs_stat(python) then
+						return python
+					end
+				end
+
+				for _, root in ipairs({ vim.fn.getcwd(), root_dir }) do
+					local python = pyenv_which_python(root)
+					if python then
+						return python
+					end
+				end
+
 				local pyenv_root = vim.env.PYENV_ROOT
 				    or (is_windows and vim.fn.expand("~/.pyenv/pyenv-win") or vim.fn.expand("~/.pyenv"))
 				if not pyenv_root or pyenv_root == "" then
