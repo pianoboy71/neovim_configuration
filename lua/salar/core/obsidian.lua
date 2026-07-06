@@ -84,7 +84,13 @@ local function open_with_system(path)
 		return
 	end
 
-	vim.fn.jobstart({ "xdg-open", path }, { detach = true })
+	if vim.fn.has("win32") == 1 then
+		vim.fn.jobstart({ "cmd.exe", "/c", "start", "", path }, { detach = true })
+	elseif vim.fn.has("macunix") == 1 then
+		vim.fn.jobstart({ "open", path }, { detach = true })
+	else
+		vim.fn.jobstart({ "xdg-open", path }, { detach = true })
+	end
 end
 
 local function find_daily_template(workspaces)

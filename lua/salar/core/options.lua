@@ -21,6 +21,7 @@ opt.ignorecase = true
 opt.smartcase = true
 
 opt.cursorline = true
+opt.fillchars:append({ eob = " " })
 
 opt.termguicolors = true
 opt.background = "dark"

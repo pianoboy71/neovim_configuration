@@ -42,7 +42,15 @@ function M.setup()
 	vim.api.nvim_create_user_command("TypstPreview", function()
 		local file = vim.fn.expand("%")
 		local pdf = file:gsub("%.typ$", ".pdf")
-		vim.fn.jobstart({ "zathura", pdf })
+		if vim.ui.open then
+			vim.ui.open(pdf)
+		elseif vim.fn.has("win32") == 1 then
+			vim.fn.jobstart({ "cmd.exe", "/c", "start", "", pdf }, { detach = true })
+		elseif vim.fn.has("macunix") == 1 then
+			vim.fn.jobstart({ "open", pdf }, { detach = true })
+		else
+			vim.fn.jobstart({ "xdg-open", pdf }, { detach = true })
+		end
 	end, {})
 
 	require("salar.tools.cpp_extract").setup()

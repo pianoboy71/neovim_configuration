@@ -7,7 +7,7 @@ return {
 		{
 			"L3MON4D3/LuaSnip",
 			version = "v2.*", -- latest release
-			build = "make install_jsregexp",
+			build = vim.fn.executable("make") == 1 and "make install_jsregexp" or nil,
 		},
 		"saadparwaiz1/cmp_luasnip", -- for autocompletion
 		"rafamadriz/friendly-snippets", -- useful snippets

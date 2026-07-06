@@ -11,6 +11,7 @@ return {
 		local capabilities = cmp_nvim_lsp.default_capabilities()
 		local keymap = vim.keymap
 		local qt_clangd_flag_pattern = "^Unknown argument:%s*['\"]?%-mno%-direct%-extern%-access['\"]?"
+		local is_windows = vim.fn.has("win32") == 1
 
 		local function cmd_from_path(command, ...)
 			local executable = vim.fn.exepath(command)
@@ -29,6 +30,75 @@ return {
 					if vim.uv.fs_stat(candidate) then
 						return candidate
 					end
+				end
+			end
+
+			local function first_python_version(version_file)
+				local stat = version_file and vim.uv.fs_stat(version_file)
+				if not stat or stat.type ~= "file" then
+					return nil
+				end
+
+				for line in io.lines(version_file) do
+					local version = line:match("^%s*([^#%s]+)")
+					if version and version ~= "system" then
+						return version
+					end
+				end
+			end
+
+			local function find_pyenv_version_file(start_dir)
+				if not start_dir or start_dir == "" then
+					return nil
+				end
+
+				local dir = vim.fs.normalize(start_dir)
+				while dir and dir ~= "" do
+					local version_file = dir .. "/.python-version"
+					if vim.uv.fs_stat(version_file) then
+						return version_file
+					end
+
+					local parent = vim.fs.dirname(dir)
+					if not parent or parent == dir then
+						break
+					end
+					dir = parent
+				end
+			end
+
+			local function pyenv_python()
+				local pyenv_root = vim.env.PYENV_ROOT
+				    or (is_windows and vim.fn.expand("~/.pyenv/pyenv-win") or vim.fn.expand("~/.pyenv"))
+				if not pyenv_root or pyenv_root == "" then
+					return nil
+				end
+
+				local version
+				if vim.env.PYENV_VERSION and vim.env.PYENV_VERSION ~= "" and vim.env.PYENV_VERSION ~= "system" then
+					version = vim.env.PYENV_VERSION:match("^%s*([^:%s]+)")
+				end
+
+				if not version then
+					local roots = {
+						root_dir,
+						vim.fn.getcwd(),
+					}
+
+					for _, root in ipairs(roots) do
+						version = first_python_version(find_pyenv_version_file(root))
+						if version then
+							break
+						end
+					end
+				end
+
+				if not version then
+					version = first_python_version(pyenv_root .. "/version")
+				end
+
+				if version then
+					return existing_python(pyenv_root .. "/versions/" .. version)
 				end
 			end
 
@@ -53,6 +123,11 @@ return {
 						end
 					end
 				end
+			end
+
+			local python = pyenv_python()
+			if python then
+				return python
 			end
 
 			return vim.fn.exepath("python3") ~= "" and vim.fn.exepath("python3") or vim.fn.exepath("python")
@@ -182,14 +257,14 @@ return {
 		-- ============================
 		-- Clang
 		-- ============================
+		local clangd_cmd = cmd_from_path("clangd", "--background-index", "--clang-tidy")
+		if not is_windows then
+			table.insert(clangd_cmd, "--query-driver=/usr/bin/c++,/usr/bin/g++")
+		end
+
 		vim.lsp.config("clangd", {
 			capabilities = capabilities,
-			cmd = cmd_from_path(
-				"clangd",
-				"--background-index",
-				"--clang-tidy",
-				"--query-driver=/usr/bin/c++,/usr/bin/g++"
-			),
+			cmd = clangd_cmd,
 		})
 		vim.lsp.enable("clangd")
 
@@ -244,6 +319,9 @@ return {
 					analysis = {
 						autoImportCompletions = true,
 						autoSearchPaths = true,
+						diagnosticSeverityOverrides = {
+							reportWildcardImportFromLibrary = "none",
+						},
 						diagnosticMode = "workspace",
 						typeCheckingMode = "basic",
 						useLibraryCodeForTypes = true,

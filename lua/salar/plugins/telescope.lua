@@ -3,7 +3,7 @@ return {
 	branch = "0.1.x",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
-		{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+		{ "nvim-telescope/telescope-fzf-native.nvim", build = vim.fn.executable("make") == 1 and "make" or nil },
 		"nvim-tree/nvim-web-devicons",
 	},
 	config = function()
@@ -32,7 +32,7 @@ return {
 			},
 		})
 
-		telescope.load_extension("fzf")
+		pcall(telescope.load_extension, "fzf")
 
 		local keymap = vim.keymap
 		keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Fuzzy find recent files" })

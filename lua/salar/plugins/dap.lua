@@ -5,9 +5,14 @@ return {
     config = function()
         local dap = require("dap")
         local uv = vim.uv or vim.loop
+        local is_windows = vim.fn.has("win32") == 1
 
         local function file_exists(path)
             return path and uv.fs_stat(path) ~= nil
+        end
+
+        local function executable_name(name)
+            return is_windows and (name .. ".exe") or name
         end
 
         local function is_executable(path)
@@ -35,7 +40,7 @@ return {
         local function pick_cpp_binary()
             local cwd = workspace_root()
             local current = vim.api.nvim_buf_get_name(0)
-            local stem = vim.fn.fnamemodify(current, ":t:r")
+            local stem = executable_name(vim.fn.fnamemodify(current, ":t:r"))
             local candidates = {
                 cwd .. "/" .. stem,
                 cwd .. "/build/" .. stem,
