@@ -71,7 +71,7 @@ return {
 		sync_tab_highlights()
 
 		vim.api.nvim_create_autocmd("ColorScheme", {
-			group = vim.api.nvim_create_augroup("SalarBufferlineThemeSync", { clear = true }),
+			group = vim.api.nvim_create_augroup("JackBufferlineThemeSync", { clear = true }),
 			callback = function()
 				bufferline.setup(options)
 				sync_fill_highlight()

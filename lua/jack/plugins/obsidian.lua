@@ -42,21 +42,21 @@ return {
 		"hrsh7th/nvim-cmp",
 	},
 	init = function()
-		local group = vim.api.nvim_create_augroup("salar-obsidian-markdown", { clear = true })
+		local group = vim.api.nvim_create_augroup("jack-obsidian-markdown", { clear = true })
 
 		vim.api.nvim_create_autocmd("FileType", {
 			group = group,
 			pattern = "markdown",
 			callback = function(args)
-				require("salar.core.obsidian").setup_markdown_buffer(args.buf)
+				require("jack.core.obsidian").setup_markdown_buffer(args.buf)
 			end,
 		})
 	end,
 	opts = function()
-		return require("salar.core.obsidian").opts()
+		return require("jack.core.obsidian").opts()
 	end,
 	config = function(_, opts)
 		require("obsidian").setup(opts)
-		require("salar.core.obsidian").patch_template_substitutions()
+		require("jack.core.obsidian").patch_template_substitutions()
 	end,
 }

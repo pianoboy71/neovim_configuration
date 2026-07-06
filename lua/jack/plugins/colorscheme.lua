@@ -1,4 +1,4 @@
-local colorschemes = require("salar.core.colorschemes")
+local colorschemes = require("jack.core.colorschemes")
 
 return vim.tbl_map(function(item)
 	local spec = {

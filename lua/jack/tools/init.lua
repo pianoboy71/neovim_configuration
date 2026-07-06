@@ -1,8 +1,8 @@
--- lua/salar/tools/init.lua
+-- lua/jack/tools/init.lua
 local M = {}
 
 function M.setup()
-	local group = vim.api.nvim_create_augroup("SalarIncludeFormatter", { clear = true })
+	local group = vim.api.nvim_create_augroup("JackIncludeFormatter", { clear = true })
 
 	-- C/C++ include formatter
 	vim.api.nvim_create_autocmd("BufWritePre", {
@@ -11,7 +11,7 @@ function M.setup()
 		callback = function(args)
 			local ft = vim.bo[args.buf].filetype
 			if ft == "typst" then return end
-			require("salar.tools.include_formatter").format(args.buf)
+			require("jack.tools.include_formatter").format(args.buf)
 		end,
 	})
 
@@ -35,7 +35,7 @@ function M.setup()
 
 	-- :Skel command
 	vim.api.nvim_create_user_command("Skel", function()
-		require("salar.tools.skeleton").insert()
+		require("jack.tools.skeleton").insert()
 	end, {})
 
 	-- :TypstPreview command
@@ -53,7 +53,7 @@ function M.setup()
 		end
 	end, {})
 
-	require("salar.tools.cpp_extract").setup()
+	require("jack.tools.cpp_extract").setup()
 end
 
 return M

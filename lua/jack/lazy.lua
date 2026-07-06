@@ -12,12 +12,12 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-	{ import = "salar.plugins" },
-	{ import = "salar.plugins.lsp" },
+	{ import = "jack.plugins" },
+	{ import = "jack.plugins.lsp" },
 }, {
 	change_detection = {
 		notify = false,
 	},
 })
 
-require("salar.core.theme").setup()
+require("jack.core.theme").setup()

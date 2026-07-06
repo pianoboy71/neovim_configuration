@@ -1,4 +1,4 @@
-# Salar's Neovim Config
+# Jack's Neovim Config
 
 A focused Neovim setup for day-to-day coding, with fast navigation, LSP-backed editing, debugging, file browsing, and a theme workflow that is easy to switch without touching config files.
 
@@ -28,7 +28,7 @@ A focused Neovim setup for day-to-day coding, with fast navigation, LSP-backed e
 Back up your existing config first, then clone this repo into Neovim's config directory:
 
 ```sh
-git clone https://github.com/SalarAlo/neovim_configuration ~/.config/nvim
+git clone https://github.com/pianoboy71/neovim_configuration ~/.config/nvim
 nvim
 ```
 
@@ -70,9 +70,9 @@ Leader is `<Space>`.
 
 ```text
 init.lua                 Entry point
-lua/salar/core/          Options, keymaps, theme state, filetype setup
-lua/salar/plugins/       Plugin specs
-lua/salar/plugins/lsp/   LSP and Mason setup
-lua/salar/tools/         Small local helper tools
+lua/jack/core/          Options, keymaps, theme state, filetype setup
+lua/jack/plugins/       Plugin specs
+lua/jack/plugins/lsp/   LSP and Mason setup
+lua/jack/tools/         Small local helper tools
 showcase/                README screenshots
 ```

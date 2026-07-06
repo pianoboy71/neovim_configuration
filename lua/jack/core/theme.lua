@@ -1,6 +1,6 @@
 local M = {}
-local colorschemes = require("salar.core.colorschemes")
-local koda = require("salar.core.koda")
+local colorschemes = require("jack.core.colorschemes")
+local koda = require("jack.core.koda")
 
 local config = {
 	themes = colorschemes.names(),

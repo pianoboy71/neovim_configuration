@@ -126,7 +126,7 @@ local function translate_obsidian_datetime_format(format)
 		{ "mm", "%M" },
 		{ "ss", "%S" },
 		{ "A", "%p" },
-		{ "a", "__SALAR_OBSIDIAN_LOWER_AMPM__" },
+		{ "a", "__JACK_OBSIDIAN_LOWER_AMPM__" },
 	}
 
 	local chunks = {}
@@ -173,13 +173,13 @@ local function render_obsidian_datetime(format)
 	local strftime_format = translate_obsidian_datetime_format(format)
 	local rendered = os.date(strftime_format)
 
-	return rendered:gsub("__SALAR_OBSIDIAN_LOWER_AMPM__", function()
+	return rendered:gsub("__JACK_OBSIDIAN_LOWER_AMPM__", function()
 		return os.date("%p"):lower()
 	end)
 end
 
 function M.patch_template_substitutions()
-	if vim.g.salar_obsidian_template_patch_applied then
+	if vim.g.jack_obsidian_template_patch_applied then
 		return
 	end
 
@@ -202,7 +202,7 @@ function M.patch_template_substitutions()
 		return original(text, client, note)
 	end
 
-	vim.g.salar_obsidian_template_patch_applied = true
+	vim.g.jack_obsidian_template_patch_applied = true
 end
 
 function M.setup_markdown_buffer(bufnr)

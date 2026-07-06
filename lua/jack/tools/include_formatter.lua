@@ -1,4 +1,4 @@
--- lua/salar/tools/include_formatter.lua
+-- lua/jack/tools/include_formatter.lua
 local M = {}
 
 -----------------------------------------------------------------------

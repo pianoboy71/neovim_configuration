@@ -37,7 +37,7 @@ return {
 		conform.setup(opts)
 
 		vim.api.nvim_create_autocmd("BufWritePre", {
-			group = vim.api.nvim_create_augroup("SalarFormatOnSave", { clear = true }),
+			group = vim.api.nvim_create_augroup("JackFormatOnSave", { clear = true }),
 			callback = function(args)
 				conform.format({
 					bufnr = args.buf,
