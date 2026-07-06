@@ -17,6 +17,47 @@ return {
 			return { executable ~= "" and executable or command, ... }
 		end
 
+		local function python_path(root_dir)
+			local function existing_python(base)
+				local candidates = {
+					base .. "/Scripts/python.exe",
+					base .. "/bin/python",
+					base .. "/bin/python3",
+				}
+
+				for _, candidate in ipairs(candidates) do
+					if vim.uv.fs_stat(candidate) then
+						return candidate
+					end
+				end
+			end
+
+			if vim.env.VIRTUAL_ENV then
+				local python = existing_python(vim.env.VIRTUAL_ENV)
+				if python then
+					return python
+				end
+			end
+
+			local roots = {
+				root_dir,
+				vim.fn.getcwd(),
+			}
+
+			for _, root in ipairs(roots) do
+				if root and root ~= "" then
+					for _, env_dir in ipairs({ ".venv", "venv", "env" }) do
+						local python = existing_python(root .. "/" .. env_dir)
+						if python then
+							return python
+						end
+					end
+				end
+			end
+
+			return vim.fn.exepath("python3") ~= "" and vim.fn.exepath("python3") or vim.fn.exepath("python")
+		end
+
 		local default_publish_diagnostics = vim.lsp.handlers["textDocument/publishDiagnostics"]
 		vim.lsp.handlers["textDocument/publishDiagnostics"] = function(err, result, ctx, config)
 			local client = ctx and vim.lsp.get_client_by_id(ctx.client_id)
@@ -99,20 +140,20 @@ return {
 			end,
 		})
 
-		-- diagnostic signs
-		local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-		for type, icon in pairs(signs) do
-			local hl = "DiagnosticSign" .. type
-			vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-		end
-
 		-- inline diagnostics (virtual text)
 		vim.diagnostic.config({
 			virtual_text = {
 				prefix = "●",
 				spacing = 2,
 			},
-			signs = true,
+			signs = {
+				text = {
+					[vim.diagnostic.severity.ERROR] = " ",
+					[vim.diagnostic.severity.WARN] = " ",
+					[vim.diagnostic.severity.HINT] = "󰠠 ",
+					[vim.diagnostic.severity.INFO] = " ",
+				},
+			},
 			underline = true,
 			update_in_insert = false,
 			severity_sort = true,
@@ -149,11 +190,6 @@ return {
 				"--clang-tidy",
 				"--query-driver=/usr/bin/c++,/usr/bin/g++"
 			),
-			init_options = {
-				fallbackFlags = {
-					"-std=c++20",
-				},
-			},
 		})
 		vim.lsp.enable("clangd")
 
@@ -181,36 +217,43 @@ return {
 				},
 			},
 		})
-			vim.lsp.enable("lua_ls")
+		vim.lsp.enable("lua_ls")
 
-			-- auto-format on save
-			vim.api.nvim_create_autocmd("BufWritePre", {
-				callback = function(ev)
-					local ft = vim.bo[ev.buf].filetype
-					local cpp_like = vim.tbl_contains({ "c", "cpp", "objc", "objcpp" }, ft)
+		-- ============================
+		-- Python
+		-- ============================
+		vim.lsp.config("pyright", {
+			capabilities = capabilities,
+			cmd = cmd_from_path("pyright-langserver", "--stdio"),
+			root_markers = {
+				"pyrightconfig.json",
+				"pyproject.toml",
+				"setup.py",
+				"setup.cfg",
+				"requirements.txt",
+				"Pipfile",
+				".git",
+			},
+			before_init = function(_, config)
+				config.settings = config.settings or {}
+				config.settings.python = config.settings.python or {}
+				config.settings.python.pythonPath = python_path(config.root_dir)
+			end,
+			settings = {
+				python = {
+					analysis = {
+						autoImportCompletions = true,
+						autoSearchPaths = true,
+						diagnosticMode = "workspace",
+						typeCheckingMode = "basic",
+						useLibraryCodeForTypes = true,
+					},
+				},
+			},
+		})
 
-					-- Typst uses typstyle (not LSP)
-					if ft == "typst" then
-						local ok, conform = pcall(require, "conform")
-						if ok then
-							conform.format({ bufnr = ev.buf })
-						end
-						return
-					end
+		vim.lsp.enable("pyright")
 
-					if not cpp_like then
-						return
-					end
-
-					vim.lsp.buf.format({
-						bufnr = ev.buf,
-						async = false,
-						filter = function(client)
-							return client.name == "clangd"
-						end,
-					})
-				end,
-			})
 		-- ============================
 		-- Rust
 		-- ============================

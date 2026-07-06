@@ -42,6 +42,7 @@ return {
 					"ts_ls",
 					"clangd",
 					"lua_ls",
+					"pyright",
 					"rust_analyzer",
 					"tinymist",
 					"hls",
