@@ -1,62 +1,48 @@
 return {
-	"obsidian-nvim/obsidian.nvim",
-	version = "*",
-	lazy = true,
-	ft = "markdown",
-	cmd = {
-		"ObsidianBacklinks",
-		"ObsidianDailies",
-		"ObsidianExtractNote",
-		"ObsidianFollowLink",
-		"ObsidianLink",
-		"ObsidianLinkNew",
-		"ObsidianLinks",
-		"ObsidianNew",
-		"ObsidianNewFromTemplate",
-		"ObsidianOpen",
-		"ObsidianPasteImg",
-		"ObsidianQuickSwitch",
-		"ObsidianRename",
-		"ObsidianSearch",
-		"ObsidianTags",
-		"ObsidianTemplate",
-		"ObsidianToday",
-		"ObsidianToggleCheckbox",
-		"ObsidianTomorrow",
-		"ObsidianTOC",
-		"ObsidianYesterday",
-	},
-	keys = {
-		{ "<leader>ob", "<cmd>ObsidianBacklinks<CR>", desc = "Obsidian backlinks" },
-		{ "<leader>od", "<cmd>ObsidianToday<CR>", desc = "Obsidian daily note" },
-		{ "<leader>ol", "<cmd>ObsidianLinks<CR>", desc = "Obsidian note links" },
-		{ "<leader>oo", "<cmd>ObsidianOpen<CR>", desc = "Open in Obsidian" },
-		{ "<leader>oq", "<cmd>ObsidianQuickSwitch<CR>", desc = "Obsidian quick switch" },
-		{ "<leader>os", "<cmd>ObsidianSearch<CR>", desc = "Search Obsidian notes" },
-		{ "<leader>ot", "<cmd>ObsidianTemplate<CR>", desc = "Insert Obsidian template" },
-		{ "<leader>oT", "<cmd>ObsidianTOC<CR>", desc = "Obsidian table of contents" },
-	},
-	dependencies = {
-		"nvim-lua/plenary.nvim",
-		"nvim-telescope/telescope.nvim",
-		"hrsh7th/nvim-cmp",
-	},
-	init = function()
-		local group = vim.api.nvim_create_augroup("jack-obsidian-markdown", { clear = true })
-
-		vim.api.nvim_create_autocmd("FileType", {
-			group = group,
-			pattern = "markdown",
-			callback = function(args)
-				require("jack.core.obsidian").setup_markdown_buffer(args.buf)
-			end,
-		})
-	end,
-	opts = function()
-		return require("jack.core.obsidian").opts()
-	end,
-	config = function(_, opts)
-		require("obsidian").setup(opts)
-		require("jack.core.obsidian").patch_template_substitutions()
-	end,
+    "epwalsh/obsidian.nvim",
+    version = "*",
+    lazy = true,
+    ft = "markdown",
+    cmd = {
+        "ObsidianOpen",
+        "ObsidianNew",
+        "ObsidianQuickSwitch",
+        "ObsidianFollowLink",
+        "ObsidianBacklinks",
+        "ObsidianTags",
+        "ObsidianToday",
+        "ObsidianRename",
+        "ObsidianSearch",
+        "ObsidianWorkspace",
+    },
+    keys = {
+        { "<leader>on", "<cmd>ObsidianNew<cr>", desc = "Obsidian New Note" },
+        { "<leader>ot", "<cmd>ObsidianToday<cr>", desc = "Obsidian Today (Daily Note)" },
+        { "<leader>os", "<cmd>ObsidianSearch<cr>", desc = "Obsidian Search (Grep Vault)" },
+        { "<leader>oq", "<cmd>ObsidianQuickSwitch<cr>", desc = "Obsidian Quick Switch File" },
+        { "<leader>oo", "<cmd>ObsidianOpen<cr>", desc = "Obsidian Open in App" },
+        { "<leader>of", "<cmd>ObsidianFollowLink<cr>", desc = "Obsidian Follow Link" },
+        { "<leader>ob", "<cmd>ObsidianBacklinks<cr>", desc = "Obsidian Backlinks" },
+        { "<leader>og", "<cmd>ObsidianTags<cr>", desc = "Obsidian Search Tags" },
+        { "<leader>or", "<cmd>ObsidianRename<cr>", desc = "Obsidian Rename Note" },
+        { "<leader>ow", "<cmd>ObsidianWorkspace<cr>", desc = "Obsidian Switch Workspace" },
+    },
+    dependencies = { "nvim-lua/plenary.nvim" },
+    init = function()
+        -- Enable conceal level for markdown buffers
+        vim.opt.conceallevel = 2
+    end,
+    opts = {
+        workspaces = {
+            {
+                name = "vault",
+                path = vim.fn.expand("~/Documents/Obsidian Vault"),
+            },
+        },
+        notes_subdir = "notes",
+        daily_notes = {
+            folder = "",
+            date_format = "%Y-%m-%d",
+        },
+    },
 }
